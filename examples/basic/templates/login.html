@@ -1,37 +1,15 @@
-<html>
-<head>
-<title>flask-strapi-auth</title>
-<meta charset="utf-8">
-</head>
+{% extends 'base.html' %}
 
-<body>
+{% block title %}{% endblock %}
+{% block header %}{% endblock %}
 
+{% block content %}
+<h1>login</h1>
 <form method="post">
     <label>username</label></br>
     <input name="username" required></br>
     <label>password</label></br>
     <input name="password" type="password" required></br>
-    <button type="submit">login</button>
+    <button type="submit">sign in</button>
 </form>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class=flashes>
-    {% for category, message in messages %}
-    {% if category == 'err' %}
-    <div><b style="color:red">{{ message }}</b></div>
-    {% elif category == 'ok' %}
-    <div><b style="color:green">{{ message }}</b></div>
-    {% elif category == 'warn' %}
-    <div><b style="color:yellow">{{ message }}</b></div>
-    {% else %}
-    <div><b>{{ message }}</b></div>
-    {% endif %}
-    {% endfor %}
-    </div>
-    {% else %}
-    <br> <!--empty space if no message flashed-->
-    {% endif %}
-{% endwith %}
-</body>
-</html>
+{% endblock %}

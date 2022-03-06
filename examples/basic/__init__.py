@@ -1,16 +1,3 @@
-'''
-this examples assumes the following:
-1. strapi app from https://github.com/strapi/foodadvisor is running on localhost:1337
-
-how to run?
-from flask-strapi project root, do:
-export FLASK_APP=examples/basic
-export FLASK_ENV=development
-flask run
-or
-flask run --no-reload (no reloading)
-'''
-
 import secrets
 import re
 import requests
@@ -26,6 +13,9 @@ def create_app():
     app.testing = False
 
     cms = Strapi(url_base = 'http://localhost:1337')
+    # adds /api to login_url by default on v4,
+    # you may still need to append /api when you do requests
+    #cms = StrapiV4(url_base = 'http://localhost:1337')
 
     @app.route('/')
     def root():
@@ -33,7 +23,7 @@ def create_app():
 
     @app.route('/logout')
     def logout():
-        session.pop('strapi', None)
+        clear_strapi_session()
         flash('logout success', 'ok')
         return redirect(url_for('login'))
 

@@ -84,3 +84,8 @@ class Strapi:
         except Exception as e:
             print(e) # print exception to console
             return 'unexpected error.'
+
+class StrapiV4(Strapi):
+
+    def __init__(self, url_base = 'http://localhost:1337', login_path='/api/auth/local'):
+        super.__init__(url_base, login_path)

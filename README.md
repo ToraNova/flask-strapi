@@ -22,6 +22,7 @@ runtest.sh
 
 ## Examples
 1. [Basic](examples/basic/__init__.py)
+2. [Basic (for Strapi V4)](examples/basicV4/__init__.py)
 
 ## TODOs
 1. Implement unit-testing

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-_version = '0.0.1'
+_version = '0.0.2'
 
 setup(
     name='flask-strapi',

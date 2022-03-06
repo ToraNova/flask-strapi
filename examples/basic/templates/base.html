@@ -1,0 +1,31 @@
+<title>flask-strapi example</title>
+
+<section class="content">
+
+<header>
+{% block header %}{% endblock %}
+</header>
+
+{% block content %}{% endblock %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+	<div class=flashes>
+	{% for category, message in messages %}
+	{% if category == 'err' %}
+	<div><b style="color:red">{{ message }}</b></div>
+	{% elif category == 'ok' %}
+	<div><b style="color:green">{{ message }}</b></div>
+	{% elif category == 'warn' %}
+	<div><b style="color:orange">{{ message }}</b></div>
+	{% else %}
+	<div><b>{{ message }}</b></div>
+	{% endif %}
+	{% endfor %}
+	</div>
+	{% else %}
+	<br> <!--empty space if no message flashed-->
+	{% endif %}
+{% endwith %}
+
+</section>
