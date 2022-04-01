@@ -2,7 +2,7 @@ import secrets
 import re
 import requests
 from flask import Flask, render_template, redirect, url_for, request, flash, session, abort
-from flask_strapi import Strapi, strapi_session, clear_strapi_session, authentication_required
+from flask_strapi import StrapiV4, StrapiV3, strapi_session, clear_strapi_session, authentication_required
 
 def create_app():
 
@@ -12,9 +12,9 @@ def create_app():
     app.secret_key = secrets.token_urlsafe(32)
     app.testing = False
 
-    cms = Strapi(url_base = 'http://localhost:1337')
-    # adds /api to login_url by default on v4,
-    # you may still need to append /api when you do requests
+    cms = StrapiV3(url_base = 'http://localhost:1337')
+    # adds /api/ to login_url by default on v4,
+    # you may still need to prepend /api/ when you do requests
     #cms = StrapiV4(url_base = 'http://localhost:1337')
 
     @app.route('/')
@@ -38,9 +38,10 @@ def create_app():
             password = request.form.get('password')
 
             err = cms.authenticate(username, password)
-            if not err:
+            if err is None:
                 return redirect(url_for('home'))
-            flash(f'error {err}', 'err')
+            else:
+                flash(err.text, 'err')
 
         return render_template('login.html')
 
@@ -57,7 +58,7 @@ def create_app():
         # or any other content, remember to ensure that the user has permission
         # to 'find' the content
         res = cms.request('/reviews')
-        return str(res)
+        return str(res.json())
 
     @app.route('/test/find_one/<int:id>')
     @authentication_required
@@ -66,7 +67,7 @@ def create_app():
         # to 'find' the content
         res = cms.request(f'/reviews/{id}')
         print(res)
-        return str(res)
+        return str(res.json())
 
     @app.route('/test/create')
     @authentication_required
@@ -78,7 +79,7 @@ def create_app():
             'author': user.get('id'),
             'restaurant': 15
         })
-        return str(res)
+        return str(res.json())
 
     @app.route('/test/update/<int:note>')
     @authentication_required
@@ -90,12 +91,12 @@ def create_app():
             'author': user.get('id'),
             'restaurant': 15
         })
-        return str(res)
+        return str(res.json())
 
     @app.route('/test/delete/<int:id>')
     @authentication_required
     def test_delete(id):
         res = cms.request(f'/reviews/{id}', 'delete')
-        return str(res)
+        return str(res.json())
 
     return app

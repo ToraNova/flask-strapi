@@ -33,57 +33,54 @@ def authentication_required(fn):
 
 class Strapi:
 
-    def __init__(self, url_base = 'http://localhost:1337', login_path='/auth/local'):
+    def __init__(self, url_base, login_path):
         self.url_base = url_base
         self.login_path = login_path
-        self.login_url = f'{self.url_base}{self.login_path}'
 
-    def request(self, path, method='get', body={}):
-        if strapi_session.get('jwt') is None:
-            return {'statusCode':401, 'error':'Unauthorized', 'message':'session not established.'}
+    def request(self, path, method='get', **kwargs):
+        '''
+        request(path, method='get/post/put/delete', body={})
+        returns a request result (python-requests)
+        '''
+        _method = method.lower()
 
-        jwt = strapi_session.get('jwt')
+        hdrs = {}
+        if 'headers' in kwargs:
+            hdrs = kwargs.pop('headers')
+
+        if isinstance(strapi_session.get('jwt'), str):
+            jwt = strapi_session.get('jwt')
+            if 'Authorization' not in hdrs:
+                hdrs['Authorization'] = f'Bearer {jwt}'
+
         url = f'{self.url_base}{path}'
         try:
-            if method == 'post':
-                res = requests.post(url, headers={'Authorization':f'Bearer {jwt}'}, json=body)
-            elif method == 'put':
-                res = requests.put(url, headers={'Authorization':f'Bearer {jwt}'}, json=body)
-            elif method == 'delete':
-                res = requests.delete(url, headers={'Authorization':f'Bearer {jwt}'})
+            if _method in ['post', 'put', 'delete']:
+                res = getattr(requests, _method)(url, headers=hdrs, **kwargs)
             else:
-                res = requests.get(url, headers={'Authorization':f'Bearer {jwt}'})
+                # default to get request
+                res = requests.get(url, headers=hdrs, **kwargs)
 
-            if res.status_code == 404:
-                return {'statusCode':404, 'error':'Not Found', 'message':'requested resources does not exist.'}
-
-            return res.json()
+            return res
         except requests.exceptions.ConnectionError:
-            return {'statusCode':500, 'error':'ConnError', 'message':'connection error on request.'}
+            raise requests.exceptions.ConnectionError('ConnectionError: connection to strapi cms failed')
         except requests.exceptions.Timeout:
-            return {'statusCode':408, 'error':'Timeout', 'message':'timeout error on request.'}
-        except Exception as e:
-            print(e) # print exception to console
-            traceback.print_exc(file=sys.stdout)
-            return {'statusCode':500, 'error':'Unexpected', 'message':'unexpected error has occurred.'}
+            raise requests.exceptions.ConnectionError('Timeout: timeout error on request to strapi cms')
 
     def authenticate(self, username, password):
-        try:
-            res = requests.post(self.login_url, json={'identifier': username, 'password':password})
-            if res.status_code == 200:
-                # success
-                _set_strapi_session(res)
-                return None
-            else:
-                # fail
-                return 'invalid login.'
-        except requests.exceptions.ConnectionError:
-            return 'login request connection error.'
-        except requests.exceptions.Timeout:
-            return 'login request timeout.'
-        except Exception as e:
-            print(e) # print exception to console
-            return 'unexpected error.'
+        '''
+        authenticate(username, password)
+        returns True if successfuly, False otherwise
+        '''
+        res = self.request(self.login_path, method='post', json={'identifier': username, 'password': password})
+        if res.status_code == 200:
+            _set_strapi_session(res)
+            return None
+        return res
+
+class StrapiV3(Strapi):
+    def __init__(self, url_base = 'http://localhost:1337', login_path='/auth/local'):
+        super.__init__(url_base, login_path)
 
 class StrapiV4(Strapi):
 
