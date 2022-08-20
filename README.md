@@ -3,6 +3,11 @@
 
 A flask module to interact with Strapi CMS.
 
+## Latest Changelogs
+- removed null sessions, `strapi_session` will just return `None` if a no strapi session exists.
+- Strapi.request can now be used outside of flask request contexts (as an unauthenticated request).
+- Supports 'app logins' as opposed to 'per session (user)' logins. This allow the app to login and request content from strapi without any user sessions. Use `as_app_session = true` on authenticate and request to be able to issue request even without flask's request context (i.e., outside of a route).
+
 ## Installation
 Recommend to do this in a virtual environment!
 
