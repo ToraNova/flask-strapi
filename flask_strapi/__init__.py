@@ -4,6 +4,9 @@ from flask import session, abort, has_request_context
 from werkzeug.local import LocalProxy
 from functools import wraps
 
+from .utils import get_attr_v4 as get_attr
+from .utils import get_user_v4 as get_user
+
 strapi_session = LocalProxy(lambda: _get_strapi_session())
 
 def clear_strapi_session():
@@ -45,6 +48,21 @@ class Strapi:
         self.url_base = url_base
         self.login_path = login_path
 
+    def init_app(self, app):
+        app.strapi_cms = self
+
+        @app.template_filter()
+        def user(val, attr=None):
+            return get_user(val, attr)
+
+        @app.template_filter()
+        def attr(val, attr):
+            return get_attr(val, attr)
+
+        @app.context_processor
+        def inject_session():
+            return dict(strapi_session=_get_strapi_session())
+
     def request(self, path, method='get', as_app_session=False, **kwargs):
         '''
         request(path, method='get/post/put/delete', body={})
@@ -77,9 +95,9 @@ class Strapi:
 
             return res
         except requests.exceptions.ConnectionError:
-            raise requests.exceptions.ConnectionError('ConnectionError: connection to strapi cms failed')
+            raise requests.exceptions.ConnectionError('ConnectionError: connection to cms failed.')
         except requests.exceptions.Timeout:
-            raise requests.exceptions.ConnectionError('Timeout: timeout error on request to strapi cms')
+            raise requests.exceptions.ConnectionError('Timeout: timeout error on request to cms.')
 
     def authenticate(self, username, password, as_app_session=False):
         '''

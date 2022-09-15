@@ -17,6 +17,8 @@ def create_app():
     # you may still need to prepend /api/ when you do requests
     #cms = StrapiV4(url_base = 'http://localhost:1337')
 
+    cms.init_app(app)
+
     @app.route('/')
     def root():
         return redirect(url_for('login'))
